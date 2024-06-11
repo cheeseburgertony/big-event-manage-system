@@ -5,7 +5,6 @@
 // 2.获取路由参数 route 要使用 useRoute 方法 这个方法从vue-router导入
 // const route = useRoute()
 import { useRouter, useRoute } from 'vue-router'
-// 进行对
 import { useUserStore, useCounterStore } from '@/stores'
 const router = useRouter()
 const route = useRoute()
