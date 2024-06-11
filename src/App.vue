@@ -18,6 +18,11 @@ const counterStore = useCounterStore()
 
 <template>
   <div>
+    <hr />
+    <hr />
+    <router-view></router-view>
+    <hr />
+    <hr />
     App
     <button @click="$router.push('/home')">跳首页</button>
     <button @click="goList">跳列表页</button>
