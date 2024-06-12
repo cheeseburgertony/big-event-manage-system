@@ -3,6 +3,8 @@ import { ref } from 'vue'
 const visibleDrawer = ref(false)
 import ChannelSelect from './ChannelSelect.vue'
 import { Plus } from '@element-plus/icons-vue'
+import { QuillEditor } from '@vueup/vue-quill'
+import '@vueup/vue-quill/dist/vue-quill.snow.css'
 
 // 组件对外暴露一个方法open，基于open传来的参数，区分添加还是编辑
 // defineExpose 向外暴露，外面获取该组件实例调用实例的方法
@@ -80,11 +82,19 @@ defineExpose({
           :on-change="onSelectFile"
         >
           <img v-if="imgUrl" :src="imgUrl" class="avatar" />
-          <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+          <el-icon v-else class="avatar-uploader-icon">
+            <Plus />
+          </el-icon>
         </el-upload>
       </el-form-item>
       <el-form-item label="文章内容" prop="content">
-        <div class="editor">富文本编辑器</div>
+        <div class="editor">
+          <quill-editor
+            theme="snow"
+            v-model:content="formModel.content"
+            content-type="html"
+          ></quill-editor>
+        </div>
       </el-form-item>
       <el-form-item>
         <el-button type="primary">发布</el-button>
@@ -102,6 +112,7 @@ defineExpose({
       height: 178px;
       display: block;
     }
+
     .el-upload {
       border: 1px dashed var(--el-border-color);
       border-radius: 6px;
@@ -110,9 +121,11 @@ defineExpose({
       overflow: hidden;
       transition: var(--el-transition-duration-fast);
     }
+
     .el-upload:hover {
       border-color: var(--el-color-primary);
     }
+
     .el-icon.avatar-uploader-icon {
       font-size: 28px;
       color: #8c939d;
@@ -120,6 +133,14 @@ defineExpose({
       height: 178px;
       text-align: center;
     }
+  }
+}
+
+.editor {
+  width: 100%;
+
+  :deep(.ql-editor) {
+    min-height: 200px;
   }
 }
 </style>
