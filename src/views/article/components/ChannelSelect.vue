@@ -4,6 +4,9 @@ import { ref } from 'vue'
 defineProps({
   modelValue: {
     type: [Number, String]
+  },
+  width: {
+    type: String
   }
 })
 const emit = defineEmits(['update:modelValue'])
@@ -20,7 +23,7 @@ getChannelList()
   <el-select
     :modelValue="modelValue"
     @update:modelValue="emit('update:modelValue', $event)"
-    style="width: 210px"
+    :style="{ width: width || '200px' }"
   >
     <el-option
       v-for="item in channelList"
