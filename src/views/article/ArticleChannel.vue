@@ -3,6 +3,7 @@ import { artGetChannelsService } from '@/api/article'
 import { Edit, Delete } from '@element-plus/icons-vue'
 import { ref } from 'vue'
 import ChannelEdit from './components/ChannelEdit.vue'
+
 const channelList = ref([])
 const loading = ref(false)
 const getChannelList = async () => {
@@ -23,6 +24,9 @@ const onEditChannel = (row) => {
 }
 const onAddChannel = () => {
   dialog.value.open({})
+}
+const onSuccess = () => {
+  getChannelList()
 }
 </script>
 
@@ -62,7 +66,7 @@ const onAddChannel = () => {
         <el-empty description="没有数据" />
       </template>
     </el-table>
-    <channel-edit ref="dialog"></channel-edit>
+    <channel-edit ref="dialog" @success="onSuccess"></channel-edit>
   </page-container>
 </template>
 
