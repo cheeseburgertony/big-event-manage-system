@@ -37,6 +37,19 @@ const onCurrentChange = (page) => {
   getArticleList()
 }
 
+// 根据当前表单中最新的数据进行重新渲染，页码应该重新回到1
+const onSearch = () => {
+  params.value.pagenum = 1
+  getArticleList()
+}
+// 将表单中的所有数据重置，然后再次发起请求
+const onReset = () => {
+  params.value.pagenum = 1
+  params.value.cate_id = ''
+  params.value.state = ''
+  getArticleList()
+}
+
 const onEditArticle = (row) => {
   console.log(row)
 }
@@ -63,8 +76,8 @@ const onDeleteArticle = (row) => {
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary">搜索</el-button>
-        <el-button>重置</el-button>
+        <el-button type="primary" @click="onSearch">搜索</el-button>
+        <el-button @click="onReset">重置</el-button>
       </el-form-item>
     </el-form>
 
