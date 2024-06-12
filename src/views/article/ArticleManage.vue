@@ -5,7 +5,8 @@ import ChannelSelect from './components/ChannelSelect.vue'
 import { artGetListService } from '@/api/article'
 import { formatTime } from '@/utils/format'
 const dataList = ref([])
-const total = ref(0)
+const total = ref(0) // 总条数
+const loading = ref(false) // loading状态
 const params = ref({
   pagenum: 1, // 当前页码数
   pagesize: 5, // 当前页需要的数据条数
@@ -13,18 +14,32 @@ const params = ref({
   state: '' // 文章状态(可选值"已发布"或"草稿")
 })
 
-const getArticle = async () => {
+const getArticleList = async () => {
+  loading.value = true
   const res = await artGetListService(params.value)
   dataList.value = res.data.data
   total.value = res.data.total
+  loading.value = false
 }
+getArticleList()
 
-getArticle()
+// 改变当前条数
+const onSizeChange = (size) => {
+  // 有可能改了当前条数后，原来的的当前页发生变化
+  // 所以在更改当前条数的提示将当前页初始化为1
+  params.value.pageSize = size
+  params.value.pagenum = 1
+  getArticleList()
+}
+// 改变当前的页码
+const onCurrentChange = (page) => {
+  params.value.pagenum = page
+  getArticleList()
+}
 
 const onEditArticle = (row) => {
   console.log(row)
 }
-
 const onDeleteArticle = (row) => {
   console.log(row)
 }
@@ -54,7 +69,7 @@ const onDeleteArticle = (row) => {
     </el-form>
 
     <!-- 表格区域 -->
-    <el-table :data="dataList">
+    <el-table :data="dataList" v-loading="loading">
       <el-table-column label="文章标题">
         <template #default="{ row }">
           <el-link type="primary" :underline="false">{{ row.title }}</el-link>
@@ -87,6 +102,19 @@ const onDeleteArticle = (row) => {
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- 分页条区域 -->
+    <el-pagination
+      v-model:current-page="params.pagenum"
+      v-model:page-size="params.pagesize"
+      :page-sizes="[2, 3, 5, 10]"
+      :background="true"
+      layout="jumper, total, sizes, prev, pager, next"
+      :total="total"
+      @size-change="onSizeChange"
+      @current-change="onCurrentChange"
+      style="margin-top: 20px; justify-content: flex-end"
+    />
   </page-container>
 </template>
 
