@@ -1,8 +1,12 @@
 <script setup>
 import { User, Lock } from '@element-plus/icons-vue'
-import { ref } from 'vue'
-import { userRegisterService } from '@/api/user'
-const isRegister = ref(true)
+import { ref, watch } from 'vue'
+import { userRegisterService, userLoginService } from '@/api/user'
+import { useUserStore } from '@/stores'
+import { useRouter } from 'vue-router'
+const isRegister = ref(false)
+const userStore = useUserStore()
+const router = useRouter()
 // 用于提交的form表单数据对象
 const formModel = ref({
   username: '',
@@ -66,6 +70,23 @@ const register = async () => {
   ElMessage.success(res.data.message)
   // 切换到成功页面
   isRegister.value = false
+}
+
+// 登录
+// 跳转的时候重置表单 使用watch监视   因为登录和注册用的是同一套formModel
+watch(isRegister, () => {
+  formModel.value.username = ''
+  formModel.value.password = ''
+})
+// 进行登录预校验
+const login = async () => {
+  await form.value.validate()
+  // 发送请求
+  const res = await userLoginService(formModel.value)
+  // 提示登录成功 保存token到本地
+  ElMessage.success(res.data.message)
+  userStore.setToken(res.data.token)
+  router.push('/')
 }
 </script>
 
@@ -145,15 +166,27 @@ const register = async () => {
       </el-form>
 
       <!-- 登录表单 -->
-      <el-form ref="form" size="large" autocomplete="off" v-else>
+      <el-form
+        :model="formModel"
+        :rules="rules"
+        ref="form"
+        size="large"
+        autocomplete="off"
+        v-else
+      >
         <el-form-item>
           <h1>登录</h1>
         </el-form-item>
-        <el-form-item>
-          <el-input :prefix-icon="User" placeholder="请输入用户名"></el-input>
-        </el-form-item>
-        <el-form-item>
+        <el-form-item prop="username">
           <el-input
+            v-model="formModel.username"
+            :prefix-icon="User"
+            placeholder="请输入用户名"
+          ></el-input>
+        </el-form-item>
+        <el-form-item prop="password">
+          <el-input
+            v-model="formModel.password"
             name="password"
             :prefix-icon="Lock"
             type="password"
@@ -168,7 +201,12 @@ const register = async () => {
           </div>
         </el-form-item>
         <el-form-item>
-          <el-button class="button" type="primary" auto-insert-space>
+          <el-button
+            @click="login"
+            class="button"
+            type="primary"
+            auto-insert-space
+          >
             登录
           </el-button>
         </el-form-item>
