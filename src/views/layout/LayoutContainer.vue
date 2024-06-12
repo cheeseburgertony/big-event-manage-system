@@ -10,6 +10,33 @@ import {
   CaretBottom
 } from '@element-plus/icons-vue'
 import avatar from '@/assets/default.png'
+import { useUserStore } from '@/stores'
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+const userStore = useUserStore()
+const router = useRouter()
+onMounted(() => {
+  userStore.getUser()
+})
+
+const handleCommand = async (key) => {
+  // 形参就是下拉菜单中选择的command值
+  if (key === 'logout') {
+    // 清空本地用户信息数据
+    await ElMessageBox.confirm('你确定退出吗？', '温馨提示', {
+      type: 'warning',
+      confirmButtonText: '确认',
+      cancelButtonText: '取消'
+    })
+    // await等待，如果确认了会继续往下执行这些代码
+    userStore.removeToken()
+    userStore.setUser({})
+    router.push('/login')
+  } else {
+    // 如果不是登出，则跳转到对应页面
+    router.push(`/user/${key}`)
+  }
+}
 </script>
 
 <template>
@@ -31,30 +58,42 @@ import avatar from '@/assets/default.png'
         router
       >
         <el-menu-item index="/article/channel">
-          <el-icon><Management /></el-icon>
+          <el-icon>
+            <Management />
+          </el-icon>
           <span>文章分类</span>
         </el-menu-item>
         <el-menu-item index="/article/manage">
-          <el-icon><Promotion /></el-icon>
+          <el-icon>
+            <Promotion />
+          </el-icon>
           <span>文章管理</span>
         </el-menu-item>
         <el-sub-menu index="/user">
           <!-- 多级菜单标题 - 具名插槽 title -->
           <template #title>
-            <el-icon><UserFilled /></el-icon>
+            <el-icon>
+              <UserFilled />
+            </el-icon>
             <span>个人中心</span>
           </template>
           <!-- 展开的内容 - 默认插槽 -->
           <el-menu-item index="/user/profile">
-            <el-icon><User /></el-icon>
+            <el-icon>
+              <User />
+            </el-icon>
             <span>基本资料</span>
           </el-menu-item>
           <el-menu-item index="/user/avatar">
-            <el-icon><Crop /></el-icon>
+            <el-icon>
+              <Crop />
+            </el-icon>
             <span>更换头像</span>
           </el-menu-item>
           <el-menu-item index="/user/password">
-            <el-icon><EditPen /></el-icon>
+            <el-icon>
+              <EditPen />
+            </el-icon>
             <span>重置密码</span>
           </el-menu-item>
         </el-sub-menu>
@@ -62,12 +101,21 @@ import avatar from '@/assets/default.png'
     </el-aside>
     <el-container>
       <el-header>
-        <div>黑马程序员：<strong>小帅鹏</strong></div>
-        <el-dropdown placement="bottom-end">
+        <div>
+          黑马程序员：<strong>{{
+            userStore.user.nickname || userStore.user.username
+          }}</strong>
+        </div>
+        <!-- 下拉菜单 -->
+        <!-- 点击菜单项后会触发事件 通过command来接收触发事件 -->
+        <el-dropdown placement="bottom-end" @command="handleCommand">
           <span class="el-dropdown__box">
-            <el-avatar :src="avatar" />
-            <el-icon><CaretBottom /></el-icon>
+            <el-avatar :src="userStore.user.user_pic || avatar" />
+            <el-icon>
+              <CaretBottom />
+            </el-icon>
           </span>
+          <!-- 下拉菜单里的内容 -->
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item command="profile" :icon="User"
@@ -97,24 +145,30 @@ import avatar from '@/assets/default.png'
 <style lang="scss" scoped>
 .layout-container {
   height: 100vh;
+
   .el-aside {
     background-color: #232323;
+
     &__logo {
       height: 120px;
       background: url('@/assets/logo.png') no-repeat center / 120px auto;
     }
+
     .el-menu {
       border-right: none;
     }
   }
+
   .el-header {
     background-color: #fff;
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     .el-dropdown__box {
       display: flex;
       align-items: center;
+
       .el-icon {
         color: #999;
         margin-left: 10px;
@@ -126,6 +180,7 @@ import avatar from '@/assets/default.png'
       }
     }
   }
+
   .el-footer {
     display: flex;
     align-items: center;
