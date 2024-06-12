@@ -51,6 +51,18 @@ const onReset = () => {
   getArticleList()
 }
 
+// 添加文章成功操作
+const onSuccess = (type) => {
+  if (type === 'add') {
+    // 如果是新增操作，会将信息添加在最后一条，所以需要将页数同事跳转到最后一页再发送请求
+    // 因为是在重新发送请求前添加上的数据，所以总数量应该先加1
+    const lastPage = Math.ceil((total.value + 1) / params.value.pagesize)
+    params.value.pagenum = lastPage
+  }
+  // 默认的话不用任何操作直接发送请求在本页面显示
+  getArticleList()
+}
+
 const articleEditRef = ref()
 const onAddArticle = () => {
   articleEditRef.value.open({})
@@ -135,7 +147,7 @@ const onDeleteArticle = (row) => {
       style="margin-top: 20px; justify-content: flex-end"
     />
 
-    <article-edit ref="articleEditRef"></article-edit>
+    <article-edit ref="articleEditRef" @success="onSuccess"></article-edit>
   </page-container>
 </template>
 

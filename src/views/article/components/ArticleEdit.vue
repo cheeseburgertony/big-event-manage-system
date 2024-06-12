@@ -1,16 +1,13 @@
 <script setup>
-import { ref } from 'vue'
-const visibleDrawer = ref(false)
+import { ref, nextTick } from 'vue'
 import ChannelSelect from './ChannelSelect.vue'
 import { Plus } from '@element-plus/icons-vue'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
+import { artPublishService } from '@/api/article'
 
-// 组件对外暴露一个方法open，基于open传来的参数，区分添加还是编辑
-// defineExpose 向外暴露，外面获取该组件实例调用实例的方法
-// open({})  => 表单传来一个空对象，无需渲染，说明是添加
-// open({id, ..., ...})  => 表单需要渲染，说明是编辑
-// open 调用后，可以打开抽屉
+const visibleDrawer = ref(false)
+const emit = defineEmits(['success'])
 
 // 准备数据
 const defaultForm = {
@@ -20,7 +17,46 @@ const defaultForm = {
   cover_img: '', // 文章封面
   state: '' //文章状态
 }
+
+// 选择图片后本地预览
 const formModel = ref({ ...defaultForm })
+const imgUrl = ref('')
+// on-change这个钩子函数的第一个形参是选择的图片对象
+const onSelectFile = (uploadFile) => {
+  imgUrl.value = URL.createObjectURL(uploadFile.raw) // 用来预览图片
+  // 立刻将图片对象存入formModel.value.cover_img 将来用于提交
+  formModel.value.cover_img = uploadFile.raw
+  console.log(uploadFile.raw)
+}
+
+// 发布逻辑
+const onPublish = async (state) => {
+  formModel.value.state = state
+  // 要求发布的时FormData对象 将数据存入fd对象中
+  const fd = new FormData()
+  for (let key in formModel.value) {
+    fd.append(key, formModel.value[key])
+  }
+
+  // 根据不同的操作发不同的请求
+  if (formModel.value.id) {
+    // 有id是编辑
+    console.log('编辑操作')
+  } else {
+    // 没有id是新增
+    await artPublishService(fd)
+    ElMessage.success('发布成功')
+    visibleDrawer.value = false
+    emit('success', 'add')
+  }
+}
+
+// 组件对外暴露一个方法open，基于open传来的参数，区分添加还是编辑
+// defineExpose 向外暴露，外面获取该组件实例调用实例的方法
+// open({})  => 表单传来一个空对象，无需渲染，说明是添加
+// open({id, ..., ...})  => 表单需要渲染，说明是编辑
+// open 调用后，可以打开抽屉
+const editorRef = ref()
 const open = (row) => {
   if (row.id) {
     // 如果有id则是编辑文章
@@ -29,19 +65,16 @@ const open = (row) => {
     // 没有则是发布文章,需要将数据重置
     console.log('发布')
     formModel.value = { ...defaultForm }
+
+    // 这里图片和富文本编辑器要另外操作
+    imgUrl.value = ''
+    // 这里富文本编辑器由于是懒加载所以这里使用nextTick等待他加载完成了再进行操作
+    nextTick(() => {
+      editorRef.value.setHTML('')
+    })
   }
   console.log(row)
   visibleDrawer.value = true
-}
-
-// 选择图片后本地预览
-const imgUrl = ref('')
-// on-change这个钩子函数的第一个形参是选择的图片对象
-const onSelectFile = (uploadFile) => {
-  imgUrl.value = URL.createObjectURL(uploadFile.raw) // 用来预览图片
-  // 立刻将图片对象存入formModel.value.cover_img 将来用于提交
-  formModel.value.cover_img = uploadFile.raw
-  console.log(uploadFile.raw)
 }
 
 defineExpose({
@@ -90,6 +123,7 @@ defineExpose({
       <el-form-item label="文章内容" prop="content">
         <div class="editor">
           <quill-editor
+            ref="editorRef"
             theme="snow"
             v-model:content="formModel.content"
             content-type="html"
@@ -97,8 +131,8 @@ defineExpose({
         </div>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary">发布</el-button>
-        <el-button type="info">草稿</el-button>
+        <el-button type="primary" @click="onPublish('已发布')">发布</el-button>
+        <el-button type="info" @click="onPublish('草稿')">草稿</el-button>
       </el-form-item>
     </el-form>
   </el-drawer>
