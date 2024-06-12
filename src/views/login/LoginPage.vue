@@ -1,6 +1,7 @@
 <script setup>
 import { User, Lock } from '@element-plus/icons-vue'
 import { ref } from 'vue'
+import { userRegisterService } from '@/api/user'
 const isRegister = ref(true)
 // 用于提交的form表单数据对象
 const formModel = ref({
@@ -25,6 +26,7 @@ const rules = {
     { min: 5, max: 10, message: '用户名必须是 5-10 位的字符', trigger: 'blur' }
   ],
   password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
     {
       pattern: /^\S{6,15}$/,
       message: '密码必须为 6-15 位的非空字符',
@@ -32,6 +34,7 @@ const rules = {
     }
   ],
   repassword: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
     {
       pattern: /^\S{6,15}$/,
       message: '密码必须为 6-15 位的非空字符',
@@ -49,6 +52,20 @@ const rules = {
       trigger: 'blur'
     }
   ]
+}
+
+// 获取表单实例 使用表单中validate()方法进行预校验
+// validate 对整个表单的内容进行验证。 接收一个回调函数，或返回 Promise。
+const form = ref()
+const register = async () => {
+  // 因为会返回一个Primise所以能等待成功说明校验成功 -> 发送请求 如果校验失败 -> 自动提示
+  await form.value.validate()
+  // console.log('开始注册请求')
+  const res = await userRegisterService(formModel.value)
+  // 异步 能接收到则说明注册成功
+  ElMessage.success(res.data.message)
+  // 切换到成功页面
+  isRegister.value = false
 }
 </script>
 
@@ -111,7 +128,12 @@ const rules = {
           ></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button class="button" type="primary" auto-insert-space>
+          <el-button
+            @click="register"
+            class="button"
+            type="primary"
+            auto-insert-space
+          >
             注册
           </el-button>
         </el-form-item>
