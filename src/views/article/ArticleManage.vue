@@ -2,28 +2,24 @@
 import { ref } from 'vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
 import ChannelSelect from './components/ChannelSelect.vue'
-const dataList = ref([
-  {
-    Id: 5961,
-    title: '新的文章啊',
-    pub_date: '2022-07-10 14:53:52.604',
-    state: '已发布',
-    cate_name: '体育'
-  },
-  {
-    Id: 5962,
-    title: '新的文章啊',
-    pub_date: '2022-07-10 14:54:30.904',
-    state: null,
-    cate_name: '体育'
-  }
-])
+import { artGetListService } from '@/api/article'
+import { formatTime } from '@/utils/format'
+const dataList = ref([])
+const total = ref(0)
 const params = ref({
   pagenum: 1, // 当前页码数
   pagesize: 5, // 当前页需要的数据条数
   cate_id: '', // 文章分类id
   state: '' // 文章状态(可选值"已发布"或"草稿")
 })
+
+const getArticle = async () => {
+  const res = await artGetListService(params.value)
+  dataList.value = res.data.data
+  total.value = res.data.total
+}
+
+getArticle()
 
 const onEditArticle = (row) => {
   console.log(row)
@@ -65,7 +61,11 @@ const onDeleteArticle = (row) => {
         </template>
       </el-table-column>
       <el-table-column label="分类" prop="cate_name"></el-table-column>
-      <el-table-column label="发表时间" prop="pub_date"></el-table-column>
+      <el-table-column label="发表时间" prop="pub_date">
+        <template #default="{ row }">
+          {{ formatTime(row.pub_date) }}
+        </template>
+      </el-table-column>
       <el-table-column label="状态" prop="state"></el-table-column>
       <el-table-column label="操作">
         <!-- 利用作用域插槽row可以获取当前行的数据 这里的row 相当于 v-for遍历中的item -->
