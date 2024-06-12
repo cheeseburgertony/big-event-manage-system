@@ -2,6 +2,7 @@
 import { artGetChannelsService } from '@/api/article'
 import { Edit, Delete } from '@element-plus/icons-vue'
 import { ref } from 'vue'
+import ChannelEdit from './components/ChannelEdit.vue'
 const channelList = ref([])
 const loading = ref(false)
 const getChannelList = async () => {
@@ -12,19 +13,23 @@ const getChannelList = async () => {
 }
 getChannelList()
 
-const onEditChannel = (row, $inedx) => {
-  console.log(row, $inedx)
-}
+const dialog = ref()
 
 const onDelChannel = (row, $inedx) => {
   console.log(row, $inedx)
+}
+const onEditChannel = (row) => {
+  dialog.value.open(row)
+}
+const onAddChannel = () => {
+  dialog.value.open({})
 }
 </script>
 
 <template>
   <page-container title="文章分类">
     <template #extra>
-      <el-button type="primary">添加分类</el-button>
+      <el-button @click="onAddChannel" type="primary">添加分类</el-button>
     </template>
     <!-- 在 el-table-column 中用 prop 属性来对应对象中的键名即可填入数据 -->
     <!-- 通过 slot 可以获取到 row, column, $index 和 store（table 内部的状态管理）的数据 -->
@@ -57,6 +62,7 @@ const onDelChannel = (row, $inedx) => {
         <el-empty description="没有数据" />
       </template>
     </el-table>
+    <channel-edit ref="dialog"></channel-edit>
   </page-container>
 </template>
 
