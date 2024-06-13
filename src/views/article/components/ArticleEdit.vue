@@ -4,7 +4,14 @@ import ChannelSelect from './ChannelSelect.vue'
 import { Plus } from '@element-plus/icons-vue'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
-import { artPublishService } from '@/api/article'
+import {
+  artPublishService,
+  artGetDetailService,
+  artUpdateService
+} from '@/api/article'
+import {} from '@/api/article'
+import { baseURL } from '@/utils/request'
+import axios from 'axios'
 
 const visibleDrawer = ref(false)
 const emit = defineEmits(['success'])
@@ -42,6 +49,10 @@ const onPublish = async (state) => {
   if (formModel.value.id) {
     // 有id是编辑
     console.log('编辑操作')
+    await artUpdateService(fd)
+    ElMessage.success('修改成功')
+    visibleDrawer.value = false
+    emit('success', 'update')
   } else {
     // 没有id是新增
     await artPublishService(fd)
@@ -57,10 +68,18 @@ const onPublish = async (state) => {
 // open({id, ..., ...})  => 表单需要渲染，说明是编辑
 // open 调用后，可以打开抽屉
 const editorRef = ref()
-const open = (row) => {
+const open = async (row) => {
   if (row.id) {
-    // 如果有id则是编辑文章
-    console.log('编辑')
+    // 如果有id则是编辑文章 进行文章回显
+    const res = await artGetDetailService(row.id)
+    formModel.value = res.data.data
+    // 图片回显需要自己拼接基地址
+    imgUrl.value = baseURL + res.data.data.cover_img
+
+    // 注意：在这提交给后台需要的数据格式是file对象格式
+    // 需要将网络地址图片转换成file对象存储起来 这里使用chatgpt进行辅助
+    const fileObj = await urlToFile(imgUrl.value, formModel.value.cover_img)
+    formModel.value.cover_img = fileObj
   } else {
     // 没有则是发布文章,需要将数据重置
     console.log('发布')
@@ -73,8 +92,34 @@ const open = (row) => {
       editorRef.value.setHTML('')
     })
   }
-  console.log(row)
+  // console.log(row)
   visibleDrawer.value = true
+}
+
+// 使用chatgpt进行辅助将网络地址图片转换成file对象
+async function urlToFile(url, filename) {
+  try {
+    // 使用axios下载图片
+    const response = await axios({
+      url: url,
+      method: 'GET',
+      responseType: 'blob'
+    })
+
+    // 创建Blob对象
+    const blob = response.data
+
+    // 获取图片的 MIME 类型
+    const mimeType = blob.type
+
+    // 将Blob对象转化为File对象
+    const file = new File([blob], filename, { type: mimeType })
+
+    return file
+  } catch (error) {
+    console.error('Error downloading the image:', error)
+    throw error
+  }
 }
 
 defineExpose({
@@ -111,7 +156,6 @@ defineExpose({
           class="avatar-uploader"
           :show-file-list="false"
           :auto-upload="false"
-          :on-success="handleAvatarSuccess"
           :on-change="onSelectFile"
         >
           <img v-if="imgUrl" :src="imgUrl" class="avatar" />
