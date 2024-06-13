@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
 import ChannelSelect from './components/ChannelSelect.vue'
-import { artGetListService } from '@/api/article'
+import { artGetListService, artDelArticleService } from '@/api/article'
 import { formatTime } from '@/utils/format'
 import ArticleEdit from './components/ArticleEdit.vue'
 const dataList = ref([])
@@ -64,15 +64,38 @@ const onSuccess = (type) => {
 }
 
 const articleEditRef = ref()
+// 添加文章
 const onAddArticle = () => {
   articleEditRef.value.open({})
 }
-
+// 修改文章
 const onEditArticle = (row) => {
   articleEditRef.value.open(row)
 }
-const onDeleteArticle = (row) => {
-  console.log(row)
+
+// 删除文章
+const onDeleteArticle = async (row) => {
+  await ElMessageBox.confirm('你确定要删除该文章吗？', '温馨提示', {
+    type: 'warning',
+    confirmButtonText: '删除',
+    cancelButtonText: '取消'
+  })
+
+  // 判断当前要删除的文章是不是该页码中的最后一条数据，如果是的话需要进行往前一页跳转
+  const lastPage = Math.ceil(total.value / params.value.pagesize)
+  // 判断当前页是不是最后一页 并且如果总条数/分页数 余1的话说明是最后一条
+  // 则将当前页数往前-1
+  if (
+    params.value.pagenum === lastPage &&
+    total.value % params.value.pagesize === 1
+  ) {
+    params.value.pagenum -= 1
+  }
+  // 再发送请求进行删除
+  await artDelArticleService(row.id)
+  ElMessage.success('删除成功')
+  // 删除后再请求
+  getArticleList()
 }
 </script>
 
