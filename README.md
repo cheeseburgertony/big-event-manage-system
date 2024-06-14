@@ -1,35 +1,11 @@
-# Vue3-big-event-admin
+# big-event-manager-system
 
-This template should help get you started developing with Vue 3 in Vite.
+# 一个使用Vue3写的大事件后台管理项目
 
-## Recommended IDE Setup
+## 项目介绍
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+大事件后台管理系统项目是一套完整的Event事件管理系统，包括文章分类、文章管理、文章详情、文章发布、修改文章、用户管理、用户详情、用户删除、用户修改、用户添加、登录、注册、退出登录等功能。
 
-## Customize configuration
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
-
-```sh
-pnpm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-pnpm dev
-```
-
-### Compile and Minify for Production
-
-```sh
-pnpm build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-pnpm lint
-```
+## 技术栈
+本项目技术栈基于 [ES6](http://es6.ruanyifeng.com/)、[vue3](https://cn.vuejs.org/index.html)、[pinia](https://pinia.web3doc.top/)、[vue-router](https://router.vuejs.org/) 、vite 、axios 和 [element-plus](https://element-plus.org/)
