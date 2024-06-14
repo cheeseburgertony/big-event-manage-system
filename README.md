@@ -1,4 +1,4 @@
-# big-event-manager-system
+# big-event-manage-system
 
 # 一个使用Vue3写的大事件后台管理项目
 
